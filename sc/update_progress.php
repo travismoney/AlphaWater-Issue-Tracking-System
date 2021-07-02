@@ -1,0 +1,348 @@
+<?php
+
+session_start();
+
+include("../include/db.php");
+
+if(!isset($_SESSION['email_address'])){
+    
+    echo "<script>window.open('../index','_self')</script>";
+    
+}else{
+
+    $user_session = $_SESSION['email_address']; 
+    
+    $get_user = "select * from users where email_address ='$user_session' ";
+    
+    $run_user = mysqli_query($con,$get_user);
+    
+    $row_user = mysqli_fetch_array($run_user);
+    
+    $_SESSION['user_id'] = $row_user['user_id'];
+
+    $user_id = $_SESSION['user_id'];
+        
+    $user_first_name = $row_user['first_name'];
+
+    $user_last_name = $row_user['last_name'];
+
+if(isset($_GET['update_progress'])){
+        
+    $update_progress = $_GET['update_progress'];
+
+    $update_progress_query = "select * from issues where issue_id = '$update_progress'";
+    
+    $run_update_progress_query = mysqli_query($con,$update_progress_query);
+    
+    $row_update_progress_query = mysqli_fetch_array($run_update_progress_query);
+    
+    // getting issue id session
+
+    $_SESSION['issue_id'] = $row_update_progress_query['issue_id'];
+
+    $issue_title = $row_update_progress_query['issue_title'];
+
+    $current_progress = $row_update_progress_query['current_progress'];
+
+        $get_status = "select * from status where status_id ='$current_progress'";
+                                            
+        $run_status = mysqli_query($con,$get_status);
+        
+            while($row_status = mysqli_fetch_array($run_status)){
+        
+                $status_id = $row_status['status_id'];
+        
+                $current_progress_name = $row_status['status_name'];
+                
+            }
+    
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>AlphaWater - Edit Issue #<?php echo $_SESSION['issue_id']; ?></title>
+        <link rel="shortcut icon" type="image/jpg" href="../images/favicon-32x32.png"/>
+        <link href="../css/styles.css" rel="stylesheet" />
+        <link href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css" rel="stylesheet" crossorigin="anonymous" />
+
+        <!--===============================================================================================-->	
+	    <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+        <!--===============================================================================================-->
+        <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+        <!--===============================================================================================-->
+        <link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+        <!--===============================================================================================-->
+        <link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+        <!--===============================================================================================-->
+        <link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+        <!--===============================================================================================-->
+        <link rel="stylesheet" type="text/css" href="vendor/perfect-scrollbar/perfect-scrollbar.css">
+        <!--===============================================================================================-->
+        <link rel="stylesheet" type="text/css" href="../css/util.css">
+        <link rel="stylesheet" type="text/css" href="../css/main.css">
+        <!--===============================================================================================-->
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/js/all.min.js" crossorigin="anonymous"></script>
+    </head>
+    <body class="sb-nav-fixed">
+        <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+            <a class="navbar-brand" href="sc-dashboard">Welcome, <?php echo $user_first_name; ?></a><button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#"><i class="fas fa-bars"></i></button
+            ><!-- Navbar Search-->
+            <form class="d-none d-md-inline-block form-inline ml-auto mr-0 mr-md-3 my-2 my-md-0"></form>
+            <!-- Navbar-->
+            <ul class="navbar-nav ml-auto ml-md-0">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="userDropdown" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                        <a class="dropdown-item" href="../logout">Logout</a>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+        <div id="layoutSidenav">
+            <div id="layoutSidenav_nav">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu">
+                        <div class="nav">
+                            <!-- Dashboard -->
+                            <a class="nav-link mt-3" href="sc-dashboard">
+                                <div class="sb-nav-link-icon"><i class="fa fa-certificate mr-1"></i></div>
+                                Dashboard
+                            </a>
+                            <!-- Issues -->
+                            <a class="nav-link" href="issues">
+                                <div class="sb-nav-link-icon"><i class="fa fa-wrench mr-1"></i></div>
+                                Issues
+                            </a>
+                            <!-- Profile -->
+                            <a class="nav-link" href="profile">
+                                <div class="sb-nav-link-icon"><i class="fa fa-user mr-1"></i></div>
+                                Profile
+                            </a>
+                        </div>
+                    </div>
+                    <div class="sb-sidenav-footer">
+                        <div class="small">Logged in as:</div>
+                        <?php echo $user_first_name; ?> <?php echo $user_last_name; ?>
+                    </div>
+                </nav>
+            </div>
+            <div id="layoutSidenav_content">
+            <main>
+                    <div class="container-fluid">
+                    <ol class="card mb-4 breadcrumb my-3 shadow-lg">
+                    <li class="breadcrumb-item active"><a href="issues">Issues </a>  <i class="fa fa-chevron-right" aria-hidden="true"></i> #<?php echo $_SESSION['issue_id']; ?> <?php echo $issue_title; ?></li>
+                        </ol>
+                        <div class="card mb-4 shadow-lg">
+                        <h4 class="mx-2 my-3 form-group col-md-6">Update Progress</h4>
+                        <div class="mx-2 panel-body"> 
+                        <form action="" class="form-horizontal" method="post" enctype="multipart/form-data">  
+                          <!-- Form Group for Status -->
+                           <div class="form-group mb-0">  
+                                <label for="" class="control-label col-md-3">Status</label>
+                                <div class="col-md-6"> <!--- col-md-6 starts --->
+                                <select name="current_progress" class="form-control" required>
+                                        <option value="<?php echo $current_progress; ?>"><?php echo $current_progress_name; ?></option>
+                                            <?php
+                                                       
+                                                $get_status = "select * from status where status_id != '$current_progress'";
+                                                                           
+                                                $run_status = mysqli_query($con,$get_status);
+                                                                           
+                                                while($row_status=mysqli_fetch_array($run_status)){
+
+                                                    $status_id = $row_status['status_id'];
+                                                                               
+                                                    $status_name = $row_status['status_name'];
+                                                                               
+                                                    echo "
+                                                                               
+                                                    <option value='$status_id' required> $status_name </option>
+
+                                                    ";
+                                                }
+                                                                        
+                                            ?>
+                                        </select>
+                                </div>
+                           </div>
+                           <!-- button for save and delete project changes -->
+                           <div class="form-group"> 
+                                <label class="col-md-3 control-label"></label>
+                                <div class="col-md-6">  
+                                    <input type="submit" value="Save Progress" name="update" class="btn btn-success form-control">
+                               </div>  
+                          </div> 
+                       </form>  
+                    </div>  
+                </div>
+            </div>
+        </main>
+                <footer class="py-4 bg-light mt-auto">
+                    <div class="container-fluid">
+                        <div class="d-flex align-items-center justify-content-between small">
+                            <div class="text-muted text-center" style="margin: 0px auto;">AlphaWater - UNIMAS SUSTAINABLE WATER TREATMENT SYSTEM</div>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <script>
+
+            // New Notification
+
+            function NewNotification(firstName,lastName,issue,information){
+
+                var first_name = firstName;
+                var last_name = lastName;
+                var issue_id = issue;
+                var information_details = information;
+                var fullName = first_name + ' ' + last_name;
+                var completeSentence = information_details + issue_id;
+                var addressLink = "issues-detailed?issue_detailed=" + issue_id;
+
+                const PushNotification = new Notification("AlphaWater: Notification", {
+
+                body: fullName + ' ' + completeSentence
+
+                });
+
+                PushNotification.onclick = function(event) {
+                event.preventDefault(); // prevent the browser from focusing the Notification's tab
+                window.open(addressLink, '_blank');
+                }
+
+            }
+
+            // Sending A New Noticiation If There Is A New Issue
+
+            var count_notifications = -1;
+
+            setInterval(function(){    
+
+            // Notifying New Comments
+
+            $.ajax({
+            type : "POST",
+            url : "notification_alerts",
+            success : function(response){
+
+                if (count_notifications != -1 && count_notifications != response){
+
+                    $.ajax({
+                    type : "POST",
+                    url : "latest_notification",
+                    dataType: "json",
+                    success : function(response){
+
+                            response1 = response[0]; // first name
+                            response2 = response[1]; // last name
+                            response3 = response[2]; // issue id
+                            response4 = response[3]; // update information
+
+                            console.log(response1);
+                            console.log(response2);
+                            console.log(response3);
+                            console.log(response4);
+
+                            NewNotification(response1,response2,response3,response4);
+
+                        } 
+
+                });
+
+                } 
+
+                count_notifications = response;
+            }
+
+            });
+
+            },1000);
+
+        </script>
+        <script src="../js/canvasjs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/js/all.min.js" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="../js/scripts.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.0/chart.min.js" integrity="sha512-yadYcDSJyQExcKhjKSQOkBKy2BLDoW6WnnGXCAkCoRlpHGpYuVuBqGObf3g/TdB86sSbss1AOP4YlGSb6EKQPg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    </body>
+</html>
+
+<?php  
+
+    // update progress
+
+    if(isset($_POST['update'])){
+
+        $issue_id = $_SESSION['issue_id'];
+
+        $current_progress = $_POST['current_progress'];
+
+        $update_issue = "update issues set 
+        current_progress = '$current_progress'
+        where
+        issue_id = '$issue_id'";
+                            
+        $run_issue_update = mysqli_query($con,$update_issue);
+              
+        if($run_issue_update){
+
+            // select the issuer id from issue
+
+            $get_issuer_id = "select * from issues where issue_id = '$issue_id' ";
+    
+            $run_issuer_id = mysqli_query($con,$get_issuer_id);
+        
+            $row_issuer_id = mysqli_fetch_array($run_issuer_id);
+        
+            $issuer_id = $row_issuer_id['issued_by'];
+
+            $assignee_id = $row_issuer_id['assignee'];
+              
+            $insert_recent_updates = "insert into recent_updates
+            (user_id,
+            issue_id,
+            issuer_id,
+            assignee_id,
+            date_time_added,
+            update_information)
+            values
+            ('$user_id',
+            '$issue_id',
+            '$issuer_id',
+            '$assignee_id',
+            NOW(),
+            'updated the progress for Issue #')";
+
+        $run_recent_updates = mysqli_query($con,$insert_recent_updates);
+                  
+            echo "<script>alert('Progress Have Been Updated!')</script>";
+                  
+            echo "<script>window.open('issues-detailed?issue_detailed=$issue_id','_self')</script>";
+                     
+        }
+              
+    }
+
+    // delete issue
+      
+    if(isset($_GET['delete_issue'])){
+                    
+        include("delete_issue.php");
+                        
+    }
+     
+}
+
+
+?>
